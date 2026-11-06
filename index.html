@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Konversi Satuan & Teknik Otomotif</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131c2e;
+      --card-sub: #1a263d;
+      --border: #26354f;
+      --border-focus: #38bdf8;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-light: rgba(2, 132, 199, 0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --text-big: 1.15rem;
+      --text-normal: 1rem;
+      --text-small: 0.85rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-stack);
+      font-size: var(--text-normal);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 880px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    header {
+      text-align: center;
+      padding-bottom: 0.25rem;
+    }
+    header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.025em;
+    }
+    header p, .kaki {
+      /*font-size: 0.85rem;*/
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .kaki { text-align:center;}
+
+    /* ================= NAVIGATION SYSTEM ================= */
+    
+    /* 1. Mobile Dropdown Selector (Active on small screens) */
+    .mobile-nav-wrapper {
+      display: none;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .mobile-nav-label {
+      font-size: var(--text-small);
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .mobile-select {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--accent);
+      color: #fff;
+      /*font-size: 0.95rem;*/
+      font-weight: 600;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      outline: none;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+    }
+    .mobile-select optgroup {
+      background: #0f172a;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .mobile-select option {
+      background: #1e293b;
+      color: #fff;
+      padding: 0.5rem;
+    }
+
+    /* 2. Desktop Grouped Wrap Pills (No horizontal scrolling) */
+    .desktop-nav-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      background: rgba(19, 28, 46, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+    }
+    .nav-group-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .nav-group-tag {
+      font-size: var(--text-small);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 110px;
+      flex-shrink: 0;
+    }
+    .nav-group-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      flex: 1;
+    }
+    .tab-btn {
+      background: var(--card-sub);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      /*font-size: 0.8rem;*/
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Responsiveness breakpoint for navigation */
+    @media (max-width: 768px) {
+      .desktop-nav-groups {
+        display: none;
+      }
+      .mobile-nav-wrapper {
+        display: flex;
+      }
+    }
+
+    /* ================= MAIN CARD & DYNAMIC HEADER ================= */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+    }
+
+    .active-tool-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      gap: 1rem;
+    }
+    .tool-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .tool-title {
+      font-size: var(--text-big);
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .tool-desc {
+      /*font-size: 0.8rem;*/
+      color: var(--text-muted);
+    }
+    .tool-category-badge {
+      font-size: var(--text-small);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      background: var(--accent-light);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      white-space: nowrap;
+    }
+
+    /* Converter & Calculator Forms */
+    .converter-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 1rem;
+    }
+    .engine-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .cr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.85rem;
+    }
+
+    @media (max-width: 680px) {
+      .converter-grid, .engine-grid {
+        grid-template-columns: 1fr;
+      }
+      .swap-btn-container {
+        display: flex;
+        justify-content: center;
+        padding: 0.25rem 0;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    label {
+      font-size: var(--text-small);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    input, select {
+      background: var(--card-sub);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.7rem 0.85rem;
+      border-radius: 8px;
+      /*font-size: 0.95rem;*/
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus {
+      border-color: var(--border-focus);
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .swap-btn {
+      background: var(--card-sub);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .swap-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Result Box */
+    .result-box {
+      margin-top: 1.25rem;
+      background: var(--card-sub);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .result-data {
+      display: flex;
+      flex-direction: column;
+    }
+    .result-label {
+      font-size: var(--text-small);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .result-val {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: -0.02em;
+      word-break: break-all;
+    }
+    .btn-copy {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: var(--text-small);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Presets & Precision */
+    .meta-bar {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .preset-label {
+      font-size: var(--text-small);
+      color: var(--text-muted);
+      margin-right: 0.25rem;
+    }
+    .preset-btn {
+      background: var(--card-sub);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.25rem 0.55rem;
+      border-radius: 4px;
+      font-size: var(--text-small);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .preset-btn:hover {
+      border-color: var(--border-focus);
+    }
+    .precision-control {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: var(--text-small);
+      color: var(--text-muted);
+    }
+    .precision-control select {
+      padding: 0.25rem 0.5rem;
+      font-size: var(--text-small);
+    }
+
+    /* Live Overview Matrix */
+    .overview-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .overview-header {
+      /*font-size: 0.8rem;*/
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 0.65rem;
+    }
+    .overview-item {
+      background: var(--card-sub);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .overview-item-label {
+      font-size: var(--text-small);
+      color: var(--text-muted);
+    }
+    .overview-item-val {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+      margin-top: 0.15rem;
+      font-feature-settings: "tnum";
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: var(--text-small);
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .badge-overbore { background: #831843; color: #fbcfe8; }
+    .badge-square { background: #065f46; color: #a7f3d0; }
+    .badge-overstroke { background: #1e3a8a; color: #bfdbfe; }
+
+    .badge-ron90 { background: #14532d; color: #86efac; }
+    .badge-ron92 { background: #1e3a8a; color: #93c5fd; }
+    .badge-ron95 { background: #701a75; color: #f5d0fe; }
+    .badge-ron98 { background: #881337; color: #fecdd3; }
+    .badge-racing { background: #7c2d12; color: #fed7aa; }
+
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--success);
+      color: #000;
+      font-weight: 600;
+      /*font-size: 0.825rem;*/
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Kalkulator Konversi Satuan & Teknik Otomotif</h1>
+      <p>Perkakas kalkulasi mesin, konversi fluida, dan toleransi fabrikasi</p>
+    </header>
+
+    <!-- MOBILE NAVIGATION: Grouped Native Select (Zero scroll, instant picker) -->
+    <div class="mobile-nav-wrapper">
+      <label class="mobile-nav-label" for="mobileNavSelect">Pilih Alat / Konverter:</label>
+      <select id="mobileNavSelect" class="mobile-select"></select>
+    </div>
+
+    <!-- DESKTOP NAVIGATION: Grouped Wrapped Pills (No horizontal scrolling) -->
+    <div class="desktop-nav-groups" id="desktopNav"></div>
+
+    <!-- MAIN CARD -->
+    <div class="card">
+      <!-- Active Tool Header Banner -->
+      <div class="active-tool-banner">
+        <div class="tool-info">
+          <div class="tool-title" id="activeToolTitle">⚡ Daya</div>
+          <div class="tool-desc" id="activeToolDesc">Konversi kilowatt, horsepower mechanical, dan PS DIN</div>
+        </div>
+        <div class="tool-category-badge" id="activeToolCategory">Powertrain</div>
+      </div>
+
+      <!-- Section 1: Standard Unit Converter Form -->
+      <div id="standardSection">
+        <div class="converter-grid">
+          <div class="form-group">
+            <label for="inputValue">Nilai Input</label>
+            <input type="number" id="inputValue" value="100" step="any">
+            <select id="fromUnit" style="margin-top: 0.4rem;"></select>
+          </div>
+
+          <div class="swap-btn-container">
+            <button class="swap-btn" id="btnSwap" title="Tukar Satuan">⇄</button>
+          </div>
+
+          <div class="form-group">
+            <label for="toUnit">Hasil Konversi Ke</label>
+            <div style="height: 42px; display: flex; align-items: center; color: var(--text-muted); font-size: var(--text-normal);">
+              Pilih satuan target di bawah:
+            </div>
+            <select id="toUnit" style="margin-top: 0.4rem;"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Engine Bore x Stroke Form -->
+      <div id="engineSection" style="display: none;">
+        <div class="engine-grid">
+          <div class="form-group">
+            <label for="engineBore">Bore / Piston (mm)</label>
+            <input type="number" id="engineBore" value="58.0" step="0.01" min="1">
+          </div>
+          <div class="form-group">
+            <label for="engineStroke">Stroke / Langkah (mm)</label>
+            <input type="number" id="engineStroke" value="58.7" step="0.01" min="1">
+          </div>
+          <div class="form-group">
+            <label for="engineCylinders">Jumlah Silinder</label>
+            <select id="engineCylinders">
+              <option value="1" selected>1 Silinder (Single)</option>
+              <option value="2">2 Silinder (Twin)</option>
+              <option value="3">3 Silinder (Triple)</option>
+              <option value="4">4 Silinder (Inline-4 / Boxer)</option>
+              <option value="6">6 Silinder (V6 / Inline-6)</option>
+              <option value="8">8 Silinder (V8)</option>
+              <option value="10">10 Silinder (V10)</option>
+              <option value="12">12 Silinder (V12)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Static Compression Ratio (CR) Form -->
+      <div id="crSection" style="display: none;">
+        <div class="cr-grid">
+          <div class="form-group">
+            <label for="crBore">Bore Silinder (mm)</label>
+            <input type="number" id="crBore" value="58.0" step="0.01" min="1">
+          </div>
+          <div class="form-group">
+            <label for="crStroke">Stroke Langkah (mm)</label>
+            <input type="number" id="crStroke" value="58.7" step="0.01" min="1">
+          </div>
+          <div class="form-group">
+            <label for="crChamber">Kubah Head (Chamber cc)</label>
+            <input type="number" id="crChamber" value="11.20" step="0.01" min="0.1">
+          </div>
+          <div class="form-group">
+            <label for="crGasketThick">Tebal Paking Head (mm)</label>
+            <input type="number" id="crGasketThick" value="0.45" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label for="crGasketBore">Diameter Paking (mm)</label>
+            <input type="number" id="crGasketBore" value="58.5" step="0.01" min="1">
+          </div>
+          <div class="form-group">
+            <label for="crDeck">Mendem Piston / Deck (mm)</label>
+            <input type="number" id="crDeck" value="0.40" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label for="crPistonType">Bentuk Kepala Piston</label>
+            <select id="crPistonType">
+              <option value="dish" selected>Dish / Coakan Klep (+ cc)</option>
+              <option value="flat">Flat / Rata Penuh (0 cc)</option>
+              <option value="dome">Dome / Jenong (- cc)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="crPistonVol">Volume Dome/Dish (cc)</label>
+            <input type="number" id="crPistonVol" value="1.20" step="0.01" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Banner -->
+      <div class="result-box">
+        <div class="result-data">
+          <span class="result-label" id="resultLabel">Hasil Perhitungan</span>
+          <span class="result-val" id="resultValue">0</span>
+        </div>
+        <button class="btn-copy" id="btnCopy">Salin</button>
+      </div>
+
+      <!-- Presets & Precision -->
+      <div class="meta-bar">
+        <div class="presets" id="presetsContainer">
+          <span class="preset-label">Preset:</span>
+        </div>
+
+        <div class="precision-control">
+          <span>Desimal:</span>
+          <select id="decimalPlaces">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview Matrix -->
+    <div class="overview-card">
+      <div class="overview-header" id="overviewHeader">Ikhtisar Detail Perhitungan</div>
+      <div class="overview-grid" id="overviewGrid"></div>
+    </div>
+    <p class="kaki">&copy; 2026 Momotoran.com</p>
+  </div>
+  <div id="toast">Disalin ke clipboard!</div>
+
+  <script>
+    // Struktur Kelompok Alat (Groups)
+    const GROUPS = {
+      engine: {
+        title: 'Kalkulator Mesin',
+        keys: ['engine', 'cr']
+      },
+      powertrain: {
+        title: 'Powertrain & Dinamika',
+        keys: ['power', 'torque', 'fuel']
+      },
+      physics: {
+        title: 'Fluida & Fabrikasi',
+        keys: ['pressure', 'volume', 'length', 'weight']
+      }
+    };
+
+    // Database Satuan & Alat
+    const DATA = {
+      engine: {
+        id: 'engine',
+        group: 'Kalkulator Mesin',
+        name: 'Kapasitas Mesin (Bore×Stroke)',
+        icon: '⚙️',
+        desc: 'Hitung kapasitas silinder total (cc/L), rasio bore-stroke, dan karakter mesin',
+        isEngine: true,
+        presets: [
+          { label: 'NMAX 155 (58 × 58.7)', bore: 58.0, stroke: 58.7, cyl: 1 },
+          { label: 'Pulsar 180 (63.5 × 56.4)', bore: 63.5, stroke: 56.4, cyl: 1 },
+          { label: 'Ninja 250 (62 × 41.2)', bore: 62.0, stroke: 41.2, cyl: 2 },
+          { label: 'Avanza 1.5 2NR (72.5 × 90.6)', bore: 72.5, stroke: 90.6, cyl: 4 },
+          { label: 'Civic Type R K20C (86 × 85.9)', bore: 86.0, stroke: 85.9, cyl: 4 }
+        ]
+      },
+      cr: {
+        id: 'cr',
+        group: 'Kalkulator Mesin',
+        name: 'Rasio Kompresi (CR)',
+        icon: '💥',
+        desc: 'Hitung rasio kompresi statis berdasarkan buret ruang bakar, paking, deck, dan piston',
+        isCR: true,
+        presets: [
+          { label: 'NMAX 155 Std (11.6:1)', bore: 58.0, stroke: 58.7, chamber: 11.2, gThick: 0.45, gBore: 58.5, deck: 0.4, pType: 'dish', pVol: 1.2 },
+          { label: 'Pulsar 180 Std (9.5:1)', bore: 63.5, stroke: 56.4, chamber: 16.2, gThick: 1.0, gBore: 64.0, deck: 0.5, pType: 'flat', pVol: 0 },
+          { label: 'Beat Fi eSP (9.5:1)', bore: 50.0, stroke: 55.1, chamber: 10.5, gThick: 0.5, gBore: 50.5, deck: 0.4, pType: 'dish', pVol: 0.8 },
+          { label: 'Touring / Harian (11.0:1)', bore: 58.5, stroke: 58.7, chamber: 12.5, gThick: 0.3, gBore: 59.0, deck: 0.3, pType: 'flat', pVol: 0 },
+          { label: 'Tune Up Balap (12.8:1)', bore: 58.0, stroke: 58.7, chamber: 10.5, gThick: 0.3, gBore: 58.5, deck: 0.2, pType: 'dome', pVol: 0.8 }
+        ]
+      },
+      power: {
+        id: 'power',
+        group: 'Powertrain & Dinamika',
+        name: 'Daya',
+        icon: '⚡',
+        desc: 'Konversi kilowatt (kW), daya kuda Imperial (hp/BHP), dan daya kuda Metrik (ps DIN)',
+        base: 'kW',
+        units: [
+          { id: 'kW', label: 'Kilowatt (kW)', factor: 1 },
+          { id: 'hp', label: 'Horsepower (hp Imperial/BHP)', factor: 0.74569987158227 },
+          { id: 'ps', label: 'Pferdestärke (ps Metrik / DIN)', factor: 0.73549875 }
+        ],
+        presets: [
+          { label: 'Avanza 1.5 (106 ps)', val: 106, from: 'ps', to: 'kW' },
+          { label: 'Ninja 250 (39 ps)', val: 39, from: 'ps', to: 'kW' },
+          { label: 'Motor Listrik (5 kW)', val: 5, from: 'kW', to: 'hp' }
+        ]
+      },
+      torque: {
+        id: 'torque',
+        group: 'Powertrain & Dinamika',
+        name: 'Torsi',
+        icon: '🔄',
+        desc: 'Konversi momen puntir Newton-meter, kgf·m, kgf·cm, dan pound-foot kunci momen',
+        base: 'Nm',
+        units: [
+          { id: 'Nm', label: 'Newton-meter (N·m)', factor: 1 },
+          { id: 'kgfm', label: 'Kilogram-force meter (kgf·m)', factor: 9.80665 },
+          { id: 'kgfcm', label: 'Kilogram-force centimeter (kgf·cm)', factor: 0.0980665 },
+          { id: 'lbfft', label: 'Pound-foot (lbf·ft)', factor: 1.3558179483314 },
+          { id: 'lbfin', label: 'Pound-inch (lbf·in)', factor: 0.1129848290276167 }
+        ],
+        presets: [
+          { label: 'NMAX 155 (13.9 Nm)', val: 13.9, from: 'Nm', to: 'kgfm' },
+          { label: 'Kunci Torsi Roda (100 lbf·ft)', val: 100, from: 'lbfft', to: 'Nm' },
+          { label: 'Baut M6 Blok (100 kgf·cm)', val: 100, from: 'kgfcm', to: 'Nm' }
+        ]
+      },
+      fuel: {
+        id: 'fuel',
+        group: 'Powertrain & Dinamika',
+        name: 'Konsumsi BBM',
+        icon: '⛽',
+        desc: 'Konversi efisiensi bahan bakar km/L, L/100km, serta Miles per Gallon (US & UK)',
+        isSpecial: true,
+        units: [
+          { id: 'kml', label: 'Kilometer per Liter (km/L)' },
+          { id: 'l100km', label: 'Liter per 100 km (L/100km)' },
+          { id: 'gal100km', label: 'US Gallon per 100 km (gal/100km)' },
+          { id: 'mpgus', label: 'Miles per US Gallon (mpg US)' },
+          { id: 'mpgimp', label: 'Miles per Imperial Gallon (mpg UK)' }
+        ],
+        presets: [
+          { label: 'Irit Harian (45 km/L)', val: 45, from: 'kml', to: 'l100km' },
+          { label: 'Mobil Kota (1:12 km/L)', val: 12, from: 'kml', to: 'l100km' },
+          { label: 'Boros / Macet (10 L/100km)', val: 10, from: 'l100km', to: 'kml' }
+        ]
+      },
+      pressure: {
+        id: 'pressure',
+        group: 'Fluida & Fabrikasi',
+        name: 'Tekanan',
+        icon: '💨',
+        desc: 'Konversi tekanan ban, kompresi mesin, dan hidrolik (psi, bar, kPa, MPa, atm)',
+        base: 'Pa',
+        units: [
+          { id: 'psi', label: 'Pound per sq inch (psi)', factor: 6894.757293168 },
+          { id: 'bar', label: 'Bar (bar)', factor: 100000 },
+          { id: 'kPa', label: 'Kilopascal (kPa)', factor: 1000 },
+          { id: 'MPa', label: 'Megapascal (MPa)', factor: 1000000 },
+          { id: 'kgfcm2', label: 'kgf/cm² (at)', factor: 98066.5 },
+          { id: 'atm', label: 'Atmosfer Standar (atm)', factor: 101325 },
+          { id: 'mmHg', label: 'Milimeter Merkuri (mmHg/Torr)', factor: 133.322368421 }
+        ],
+        presets: [
+          { label: 'Ban Depan (29 psi)', val: 29, from: 'psi', to: 'bar' },
+          { label: 'Ban Belakang (33 psi)', val: 33, from: 'psi', to: 'kPa' },
+          { label: 'Kompresi Motor (11 bar)', val: 11, from: 'bar', to: 'psi' },
+          { label: 'Tutup Radiator (1.1 bar)', val: 1.1, from: 'bar', to: 'kPa' }
+        ]
+      },
+      volume: {
+        id: 'volume',
+        group: 'Fluida & Fabrikasi',
+        name: 'Volume / Isi',
+        icon: '🛢️',
+        desc: 'Konversi cc, mililiter, liter, cubic inch mesin, fluid ounce, dan galon',
+        base: 'L',
+        units: [
+          { id: 'cc', label: 'Sentimeter Kubik (cc / cm³)', factor: 0.001 },
+          { id: 'ml', label: 'Mililiter (mL)', factor: 0.001 },
+          { id: 'L', label: 'Liter (L / dm³)', factor: 1 },
+          { id: 'm3', label: 'Meter Kubik (m³)', factor: 1000 },
+          { id: 'cuin', label: 'Cubic Inch (in³ / ci)', factor: 0.016387064 },
+          { id: 'cuft', label: 'Cubic Foot (ft³ / cu ft)', factor: 28.316846592 },
+          { id: 'floz', label: 'Fluid Ounce US (fl oz)', factor: 0.0295735295625 },
+          { id: 'gal_us', label: 'Gallon US Cair (gal)', factor: 3.785411784 },
+          { id: 'gal_uk', label: 'Gallon Imperial UK (gal)', factor: 4.54609 }
+        ],
+        presets: [
+          { label: 'Oli Mesin Matic (0.9 L)', val: 0.9, from: 'L', to: 'cc' },
+          { label: 'Tangki NMAX (7.1 L)', val: 7.1, from: 'L', to: 'gal_us' },
+          { label: 'Mesin V8 350 ci', val: 350, from: 'cuin', to: 'cc' },
+          { label: 'Oli Shock Depan (150 cc)', val: 150, from: 'cc', to: 'floz' }
+        ]
+      },
+      length: {
+        id: 'length',
+        group: 'Fluida & Fabrikasi',
+        name: 'Panjang & Dimensi',
+        icon: '📏',
+        desc: 'Konversi toleransi bubut, diameter pipa, velg, dan dimensi bodi (mm, cm, m, inch, feet)',
+        base: 'm',
+        units: [
+          { id: 'mm', label: 'Milimeter (mm)', factor: 0.001 },
+          { id: 'cm', label: 'Sentimeter (cm)', factor: 0.01 },
+          { id: 'm', label: 'Meter (m)', factor: 1 },
+          { id: 'km', label: 'Kilometer (km)', factor: 1000 },
+          { id: 'in', label: 'Inci (inch / in)', factor: 0.0254 },
+          { id: 'ft', label: 'Kaki (feet / ft)', factor: 0.3048 },
+          { id: 'yd', label: 'Yard (yd)', factor: 0.9144 },
+          { id: 'mi', label: 'Mil (mile / mi)', factor: 1609.344 }
+        ],
+        presets: [
+          { label: 'Velg 17 Inci', val: 17, from: 'in', to: 'mm' },
+          { label: 'Wheelbase NMAX (1340 mm)', val: 1340, from: 'mm', to: 'in' },
+          { label: 'Pipa 1.25 Inci', val: 1.25, from: 'in', to: 'mm' }
+        ]
+      },
+      weight: {
+        id: 'weight',
+        group: 'Fluida & Fabrikasi',
+        name: 'Berat / Massa',
+        icon: '⚖️',
+        desc: 'Konversi gram roller, bobot kendaraan, helm, dan perbandingan pound (lb) ke kg',
+        base: 'kg',
+        units: [
+          { id: 'mg', label: 'Miligram (mg)', factor: 0.000001 },
+          { id: 'g', label: 'Gram (g)', factor: 0.001 },
+          { id: 'kg', label: 'Kilogram (kg)', factor: 1 },
+          { id: 't', label: 'Ton Metrik (t)', factor: 1000 },
+          { id: 'oz', label: 'Ounce (oz)', factor: 0.028349523125 },
+          { id: 'lb', label: 'Pound (lb / pon)', factor: 0.45359237 }
+        ],
+        presets: [
+          { label: 'Bobot Motor (130 kg)', val: 130, from: 'kg', to: 'lb' },
+          { label: 'Helm Dual-Sport (1650 g)', val: 1650, from: 'g', to: 'lb' },
+          { label: 'Roller CVT (11 g)', val: 11, from: 'g', to: 'oz' }
+        ]
+      }
+    };
+
+    let activeCategory = 'power';
+
+    // DOM Elements
+    const mobileNavSelect = document.getElementById('mobileNavSelect');
+    const desktopNav = document.getElementById('desktopNav');
+
+    const activeToolTitle = document.getElementById('activeToolTitle');
+    const activeToolDesc = document.getElementById('activeToolDesc');
+    const activeToolCategory = document.getElementById('activeToolCategory');
+
+    const standardSection = document.getElementById('standardSection');
+    const engineSection = document.getElementById('engineSection');
+    const crSection = document.getElementById('crSection');
+
+    const fromUnitSelect = document.getElementById('fromUnit');
+    const toUnitSelect = document.getElementById('toUnit');
+    const inputVal = document.getElementById('inputValue');
+
+    const engineBore = document.getElementById('engineBore');
+    const engineStroke = document.getElementById('engineStroke');
+    const engineCylinders = document.getElementById('engineCylinders');
+
+    const crBore = document.getElementById('crBore');
+    const crStroke = document.getElementById('crStroke');
+    const crChamber = document.getElementById('crChamber');
+    const crGasketThick = document.getElementById('crGasketThick');
+    const crGasketBore = document.getElementById('crGasketBore');
+    const crDeck = document.getElementById('crDeck');
+    const crPistonType = document.getElementById('crPistonType');
+    const crPistonVol = document.getElementById('crPistonVol');
+
+    const resultValue = document.getElementById('resultValue');
+    const resultLabel = document.getElementById('resultLabel');
+    const decimalSelect = document.getElementById('decimalPlaces');
+    const presetsContainer = document.getElementById('presetsContainer');
+    const overviewGrid = document.getElementById('overviewGrid');
+    const btnSwap = document.getElementById('btnSwap');
+    const btnCopy = document.getElementById('btnCopy');
+    const toast = document.getElementById('toast');
+
+    // Inisialisasi Navigasi (Mobile Select & Desktop Wrap Grid)
+    function buildNavigation() {
+      // 1. Mobile Dropdown with optgroups
+      mobileNavSelect.innerHTML = '';
+      Object.keys(GROUPS).forEach(gKey => {
+        const group = GROUPS[gKey];
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = `--- ${group.title} ---`;
+
+        group.keys.forEach(k => {
+          const item = DATA[k];
+          const opt = new Option(`${item.icon} ${item.name}`, item.id);
+          if (item.id === activeCategory) opt.selected = true;
+          optgroup.appendChild(opt);
+        });
+        mobileNavSelect.appendChild(optgroup);
+      });
+
+      mobileNavSelect.addEventListener('change', (e) => {
+        switchCategory(e.target.value);
+      });
+
+      // 2. Desktop Grouped Row Buttons
+      desktopNav.innerHTML = '';
+      Object.keys(GROUPS).forEach(gKey => {
+        const group = GROUPS[gKey];
+        const row = document.createElement('div');
+        row.className = 'nav-group-row';
+
+        const tag = document.createElement('span');
+        tag.className = 'nav-group-tag';
+        tag.textContent = group.title;
+        row.appendChild(tag);
+
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'nav-group-buttons';
+
+        group.keys.forEach(k => {
+          const item = DATA[k];
+          const btn = document.createElement('button');
+          btn.className = `tab-btn ${k === activeCategory ? 'active' : ''}`;
+          btn.dataset.id = k;
+          btn.innerHTML = `<span>${item.icon}</span> <span>${item.name}</span>`;
+          btn.addEventListener('click', () => switchCategory(k));
+          btnContainer.appendChild(btn);
+        });
+
+        row.appendChild(btnContainer);
+        desktopNav.appendChild(row);
+      });
+    }
+
+    // Ganti Kategori & Sinkronisasi Semua View
+    function switchCategory(catKey) {
+      activeCategory = catKey;
+      const cat = DATA[activeCategory];
+
+      // Sinkronkan Mobile Select
+      mobileNavSelect.value = catKey;
+
+      // Sinkronkan Desktop Buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.id === catKey);
+      });
+
+      // Perbarui Banner Judul Aktif
+      activeToolTitle.innerHTML = `<span>${cat.icon}</span> <span>${cat.name}</span>`;
+      activeToolDesc.textContent = cat.desc;
+      activeToolCategory.textContent = cat.group;
+
+      // Toggle Tampilan Form
+      standardSection.style.display = 'none';
+      engineSection.style.display = 'none';
+      crSection.style.display = 'none';
+      btnSwap.style.display = 'none';
+
+      if (cat.isEngine) {
+        engineSection.style.display = 'block';
+      } else if (cat.isCR) {
+        crSection.style.display = 'block';
+      } else {
+        standardSection.style.display = 'block';
+        btnSwap.style.display = 'flex';
+        populateUnits();
+      }
+
+      populatePresets();
+      calculate();
+    }
+
+    function populateUnits() {
+      const cat = DATA[activeCategory];
+      if (cat.isEngine || cat.isCR) return;
+
+      fromUnitSelect.innerHTML = '';
+      toUnitSelect.innerHTML = '';
+
+      cat.units.forEach((u) => {
+        const opt1 = new Option(u.label, u.id);
+        const opt2 = new Option(u.label, u.id);
+        fromUnitSelect.add(opt1);
+        toUnitSelect.add(opt2);
+      });
+
+      fromUnitSelect.selectedIndex = 0;
+      toUnitSelect.selectedIndex = cat.units.length > 1 ? 1 : 0;
+    }
+
+    function populatePresets() {
+      presetsContainer.innerHTML = '<span class="preset-label">Preset:</span>';
+      const cat = DATA[activeCategory];
+      if (!cat.presets) return;
+
+      cat.presets.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.textContent = p.label;
+        btn.addEventListener('click', () => {
+          if (cat.isEngine) {
+            engineBore.value = p.bore;
+            engineStroke.value = p.stroke;
+            engineCylinders.value = p.cyl;
+          } else if (cat.isCR) {
+            crBore.value = p.bore;
+            crStroke.value = p.stroke;
+            crChamber.value = p.chamber;
+            crGasketThick.value = p.gThick;
+            crGasketBore.value = p.gBore;
+            crDeck.value = p.deck;
+            crPistonType.value = p.pType;
+            crPistonVol.value = p.pVol;
+          } else {
+            inputVal.value = p.val;
+            fromUnitSelect.value = p.from;
+            toUnitSelect.value = p.to;
+          }
+          calculate();
+        });
+        presetsContainer.appendChild(btn);
+      });
+    }
+
+    function convertFuel(val, from, to) {
+      if (val <= 0) return 0;
+      let l100 = 0;
+
+      if (from === 'l100km') l100 = val;
+      else if (from === 'kml') l100 = 100 / val;
+      else if (from === 'gal100km') l100 = val * 3.785411784;
+      else if (from === 'mpgus') l100 = 235.214583 / val;
+      else if (from === 'mpgimp') l100 = 282.4809363 / val;
+
+      if (to === 'l100km') return l100;
+      if (to === 'kml') return 100 / l100;
+      if (to === 'gal100km') return l100 / 3.785411784;
+      if (to === 'mpgus') return 235.214583 / l100;
+      if (to === 'mpgimp') return 282.4809363 / l100;
+      return 0;
+    }
+
+    function calculateEngine() {
+      const bore = parseFloat(engineBore.value);
+      const stroke = parseFloat(engineStroke.value);
+      const cyl = parseInt(engineCylinders.value);
+      const dec = parseInt(decimalSelect.value);
+
+      if (isNaN(bore) || isNaN(stroke) || isNaN(cyl) || bore <= 0 || stroke <= 0) {
+        resultValue.textContent = '-';
+        overviewGrid.innerHTML = '';
+        return;
+      }
+
+      const singleCylinderCc = (Math.PI / 4) * Math.pow(bore, 2) * stroke / 1000;
+      const totalCc = singleCylinderCc * cyl;
+      const totalLiters = totalCc / 1000;
+      const totalCuIn = totalCc / 16.387064;
+      const ratio = bore / stroke;
+
+      let characterText = '';
+      let badgeClass = '';
+      if (ratio > 1.05) {
+        characterText = 'Overbore / Short-stroke (RPM Tinggi)';
+        badgeClass = 'badge-overbore';
+      } else if (ratio < 0.95) {
+        characterText = 'Overstroke / Long-stroke (Torsi Bawah)';
+        badgeClass = 'badge-overstroke';
+      } else {
+        characterText = 'Square Engine (Seimbang)';
+        badgeClass = 'badge-square';
+      }
+
+      resultValue.textContent = `${formatNumber(totalCc, dec)} cc`;
+      resultLabel.textContent = `Total Kapasitas (${bore} mm × ${stroke} mm, ${cyl} Silinder)`;
+
+      overviewGrid.innerHTML = `
+        <div class="overview-item">
+          <span class="overview-item-label">Total Volume (cc / cm³)</span>
+          <span class="overview-item-val">${formatNumber(totalCc, dec)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Total Volume (Liter)</span>
+          <span class="overview-item-val">${formatNumber(totalLiters, dec >= 2 ? dec : 2)} L</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Total Volume (Cubic Inch)</span>
+          <span class="overview-item-val">${formatNumber(totalCuIn, dec)} ci / in³</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Kapasitas per Silinder</span>
+          <span class="overview-item-val">${formatNumber(singleCylinderCc, dec)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Rasio Bore / Stroke</span>
+          <span class="overview-item-val">${formatNumber(ratio, 2)} : 1</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Karakter Mesin</span>
+          <span class="badge ${badgeClass}">${characterText}</span>
+        </div>
+      `;
+    }
+
+    function calculateCR() {
+      const bore = parseFloat(crBore.value);
+      const stroke = parseFloat(crStroke.value);
+      const chamber = parseFloat(crChamber.value);
+      const gThick = parseFloat(crGasketThick.value) || 0;
+      const gBore = parseFloat(crGasketBore.value) || bore;
+      const deck = parseFloat(crDeck.value) || 0;
+      const pType = crPistonType.value;
+      const pVolRaw = parseFloat(crPistonVol.value) || 0;
+      const dec = parseInt(decimalSelect.value);
+
+      if (isNaN(bore) || isNaN(stroke) || isNaN(chamber) || bore <= 0 || stroke <= 0 || chamber <= 0) {
+        resultValue.textContent = '-';
+        overviewGrid.innerHTML = '';
+        return;
+      }
+
+      const vs = (Math.PI / 4) * Math.pow(bore, 2) * stroke / 1000;
+      const vGasket = (Math.PI / 4) * Math.pow(gBore, 2) * gThick / 1000;
+      const vDeck = (Math.PI / 4) * Math.pow(bore, 2) * deck / 1000;
+
+      let vPiston = 0;
+      if (pType === 'dish') vPiston = pVolRaw;
+      else if (pType === 'dome') vPiston = -pVolRaw;
+
+      const vc = chamber + vGasket + vDeck + vPiston;
+
+      if (vc <= 0) {
+        resultValue.textContent = 'Error (Vc ≤ 0)';
+        resultLabel.textContent = 'Dome terlalu besar melebihi ruang bakar';
+        overviewGrid.innerHTML = '';
+        return;
+      }
+
+      const cr = (vs + vc) / vc;
+
+      let fuelText = '';
+      let badgeClass = '';
+      if (cr < 9.5) {
+        fuelText = 'RON 90 (Pertalite / Reguler)';
+        badgeClass = 'badge-ron90';
+      } else if (cr < 10.5) {
+        fuelText = 'RON 92 (Pertamax / Shell Super)';
+        badgeClass = 'badge-ron92';
+      } else if (cr < 11.5) {
+        fuelText = 'RON 95 (Pertamax Green / V-Power)';
+        badgeClass = 'badge-ron95';
+      } else if (cr < 12.5) {
+        fuelText = 'RON 98 (Pertamax Turbo / V-Power Nitro+)';
+        badgeClass = 'badge-ron98';
+      } else {
+        fuelText = 'RON 100+ (Racing Fuel / Avgas)';
+        badgeClass = 'badge-racing';
+      }
+
+      resultValue.textContent = `${formatNumber(cr, dec)} : 1`;
+      resultLabel.textContent = `Static CR | Volume Sapuan: ${formatNumber(vs, 2)} cc`;
+
+      overviewGrid.innerHTML = `
+        <div class="overview-item">
+          <span class="overview-item-label">Rasio Kompresi Statis</span>
+          <span class="overview-item-val" style="color:#38bdf8;">${formatNumber(cr, dec)} : 1</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Volume Sapuan Piston (Vs)</span>
+          <span class="overview-item-val">${formatNumber(vs, 2)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Total Ruang Bakar (Vc)</span>
+          <span class="overview-item-val">${formatNumber(vc, 2)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Volume Kubah Head (Buret)</span>
+          <span class="overview-item-val">${formatNumber(chamber, 2)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Volume Paking Head</span>
+          <span class="overview-item-val">${formatNumber(vGasket, 2)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Volume Deck Clearance</span>
+          <span class="overview-item-val">${formatNumber(vDeck, 2)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Efek Piston (${pType.toUpperCase()})</span>
+          <span class="overview-item-val">${vPiston > 0 ? '+' : ''}${formatNumber(vPiston, 2)} cc</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-item-label">Rekomendasi Bahan Bakar</span>
+          <span class="badge ${badgeClass}">${fuelText}</span>
+        </div>
+      `;
+    }
+
+    function calculate() {
+      const cat = DATA[activeCategory];
+      if (cat.isEngine) {
+        calculateEngine();
+        return;
+      }
+      if (cat.isCR) {
+        calculateCR();
+        return;
+      }
+
+      const val = parseFloat(inputVal.value);
+      const dec = parseInt(decimalSelect.value);
+
+      if (isNaN(val)) {
+        resultValue.textContent = '-';
+        overviewGrid.innerHTML = '';
+        return;
+      }
+
+      let res = 0;
+      const from = fromUnitSelect.value;
+      const to = toUnitSelect.value;
+
+      if (cat.isSpecial && activeCategory === 'fuel') {
+        res = convertFuel(val, from, to);
+      } else {
+        const fromUnit = cat.units.find(u => u.id === from);
+        const toUnit = cat.units.find(u => u.id === to);
+        const baseVal = val * fromUnit.factor;
+        res = baseVal / toUnit.factor;
+      }
+
+      const formatted = formatNumber(res, dec);
+      resultValue.textContent = formatted;
+      resultLabel.textContent = `${val} ${from} = ... ${to}`;
+
+      renderOverview(val, from, dec);
+    }
+
+    function renderOverview(inputNum, fromId, dec) {
+      overviewGrid.innerHTML = '';
+      const cat = DATA[activeCategory];
+
+      cat.units.forEach(u => {
+        let converted = 0;
+        if (isNaN(inputNum)) {
+          converted = '-';
+        } else if (cat.isSpecial && activeCategory === 'fuel') {
+          converted = formatNumber(convertFuel(inputNum, fromId, u.id), dec);
+        } else {
+          const fromUnit = cat.units.find(item => item.id === fromId);
+          const baseVal = inputNum * fromUnit.factor;
+          converted = formatNumber(baseVal / u.factor, dec);
+        }
+
+        const div = document.createElement('div');
+        div.className = 'overview-item';
+        div.innerHTML = `
+          <span class="overview-item-label">${u.label}</span>
+          <span class="overview-item-val">${converted}</span>
+        `;
+        overviewGrid.appendChild(div);
+      });
+    }
+
+    function formatNumber(num, dec) {
+      if (isNaN(num)) return '-';
+      if (num === 0) return '0';
+      return parseFloat(num.toFixed(dec)).toLocaleString('id-ID', {
+        maximumFractionDigits: dec
+      });
+    }
+
+    // Event Listeners
+    inputVal.addEventListener('input', calculate);
+    fromUnitSelect.addEventListener('change', calculate);
+    toUnitSelect.addEventListener('change', calculate);
+    decimalSelect.addEventListener('change', calculate);
+
+    engineBore.addEventListener('input', calculate);
+    engineStroke.addEventListener('input', calculate);
+    engineCylinders.addEventListener('change', calculate);
+
+    [crBore, crStroke, crChamber, crGasketThick, crGasketBore, crDeck, crPistonVol].forEach(el => {
+      el.addEventListener('input', calculate);
+    });
+    crPistonType.addEventListener('change', calculate);
+
+    btnSwap.addEventListener('click', () => {
+      const temp = fromUnitSelect.value;
+      fromUnitSelect.value = toUnitSelect.value;
+      toUnitSelect.value = temp;
+      calculate();
+    });
+
+    btnCopy.addEventListener('click', () => {
+      const text = resultValue.textContent;
+      if (text && text !== '-') {
+        navigator.clipboard.writeText(text).then(() => {
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 2000);
+        });
+      }
+    });
+
+    // Inisialisasi awal
+    buildNavigation();
+    switchCategory(activeCategory);
+  </script>
+</body>
+</html>
